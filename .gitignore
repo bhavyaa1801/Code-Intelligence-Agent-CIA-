@@ -1,0 +1,26 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Cloned repositories
+data/repositories/
+
+# OS
+.DS_Store
+Thumbs.db
