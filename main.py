@@ -10,6 +10,7 @@ from app.indexing.index_builder import IndexBuilder
 from app.retrival.repo_ret import RepositoryRetriever
 from app.indexing.prompting.promt_builder import PromptBuilder
 from app.services.chat_services import ChatService
+from app.retrival.query_analyzer import QueryAnalyzer
 
 from app.llm import settings
 from app.llm.gemini import GeminiClient
@@ -21,6 +22,7 @@ def main():
     scanner = RepositoryScanner()
     classifier = RepositoryClassifier()
     filterr = RepositoryFilter()
+    query_analyzer = QueryAnalyzer()
 
     repo = manager.clone(
         "https://github.com/bhavyaa1801/SUBMITIFY"
@@ -41,7 +43,10 @@ def main():
 
 
     index_builder = IndexBuilder()
-    index = index_builder.build(documents)
+    index = index_builder.build(
+        repo_name=repo.name.lower(),
+        nodes=nodes,
+    )
 
     retriever = RepositoryRetriever(index)
 
@@ -49,6 +54,7 @@ def main():
 
     chat = ChatService(
         retriever=retriever,
+        query_analyzer=query_analyzer,
         prompt_builder=prompt_builder,
         model=GeminiClient(),
     )

@@ -1,14 +1,54 @@
-from llama_index.core import VectorStoreIndex
+from pathlib import Path
 
-from app.indexing.node_parser import RepositoryNodeParser
+import chromadb
+
+from llama_index.core import VectorStoreIndex
+from llama_index.core.storage.storage_context import StorageContext
+from llama_index.vector_stores.chroma import ChromaVectorStore
 
 
 class IndexBuilder:
 
-    def build(self, documents):
+    def __init__(self):
 
-        parser = RepositoryNodeParser()
+        self.client = chromadb.PersistentClient(
+            path="data/chroma"
+        )
 
-        nodes = parser.parse(documents)
+    def build(
+        self,
+        repo_name: str,
+        nodes,
+    ) -> VectorStoreIndex:
 
-        return VectorStoreIndex(nodes)
+
+        collection = self.client.get_or_create_collection(
+            name=repo_name
+        )
+
+        vector_store = ChromaVectorStore(
+            chroma_collection=collection
+        )
+
+        storage_context = StorageContext.from_defaults(
+            vector_store=vector_store
+        )
+
+        if collection.count() == 0:
+
+            print(f"Building index for '{repo_name}'...")
+
+            index = VectorStoreIndex(
+                nodes,
+                storage_context=storage_context,
+            )
+
+        else:
+
+            print(f"Loading existing index for '{repo_name}'...")
+
+            index = VectorStoreIndex.from_vector_store(
+                vector_store=vector_store,
+            )
+
+        return index
